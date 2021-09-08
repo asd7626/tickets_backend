@@ -89,7 +89,7 @@ class OrderListView(generics.ListCreateAPIView):
     queryset = Order.objects.all()
     
     
-    def post(self, request, order_obj = Order(), format=None):
+    def post(self, request, format=None):
         serializer = self.get_serializer_class()(data=request.data)
     
         if serializer.is_valid():
@@ -97,6 +97,7 @@ class OrderListView(generics.ListCreateAPIView):
             email = serializer.data.get('email')
             phone = serializer.data.get('phone')
             events = serializer.data.get('events')
+            
             order_obj = Order.objects.create(name=name, email=email, phone=phone)
             order_obj.events.set(events)
             order_obj.save()
