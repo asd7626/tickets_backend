@@ -63,12 +63,14 @@ def sending_email_subscribe(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Order)
 def sending_email_order(sender, instance, **kwargs):
-    
-    events = ['{} in {} on {}'.format(event.headliner, event.city.capitalize(), event.date.date()) for event in instance.events.all()]
-    if len(events) > 0:
+    events = '\n \n'
+    for event in instance.events.all():
+        events+= '{} in {} on {} at {} \n'.format(event.headliner.upper(), event.city.capitalize(), event.date.strftime("%d %B"), event.date.strftime("%H:%M"))
+    #events = ["{} in {} on {}".format(event.headliner, event.city.capitalize(), event.date.date()) for event in instance.events.all()]
+    if len(instance.events.all()) > 0:
         send_mail(
             'Tickets UA',
-            'Hello, {}. Here is your order confirmation. You ordered tickets: {}'.format(instance.name, events),
+            'Hello, {}. Here is your order confirmation. You ordered {} tickets: {}'.format(instance.name, len(instance.events.all()), events),
             'TICKETS UA',
             [str(instance.email)],
             fail_silently=False
