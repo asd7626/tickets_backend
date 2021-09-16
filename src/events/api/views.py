@@ -97,8 +97,10 @@ class OrderListView(generics.ListCreateAPIView):
             email = serializer.data.get('email')
             phone = serializer.data.get('phone')
             events = serializer.data.get('events')
+            total = serializer.data.get('total')
+            comment = serializer.data.get('comment')
             
-            order_obj = Order.objects.create(name=name, email=email, phone=phone)
+            order_obj = Order.objects.create(name=name, email=email, phone=phone, total=total, comment=comment)
             order_obj.events.set(events)
             order_obj.save()
         

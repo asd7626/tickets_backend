@@ -1,5 +1,9 @@
 from django.db import models
 from datetime import date, datetime
+from django.utils.text import slugify
+from django.core.mail import send_mail
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
 
 class Event(models.Model):
     CITIES = [('dnipro', 'dnipro'), ('kyiv', 'kyiv'), ('kharkiv', 'kharkiv')]
@@ -12,11 +16,13 @@ class Event(models.Model):
     date = models.DateTimeField()
     month = models.CharField(max_length=100, choices=MONTHS, default='january')
     description = models.TextField(null=True, blank=True)
+    description2 = models.TextField(null=True, blank=True, default='')
     price = models.IntegerField(default=300)
     category = models.CharField(max_length=100, choices=CATEGORIES)
     date_added = models.DateTimeField(auto_now_add=True)
     popular = models.BooleanField(default=False)
     carousel = models.BooleanField(default=False)
+    
 
     class Meta:
         ordering = ['date']
@@ -38,15 +44,14 @@ class Order(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
     phone = models.CharField(max_length=20)
+    total = models.IntegerField(default=1)
+    comment = models.TextField(default='', null=True, blank=True)
 
     def __str__(self):
-        return str(self.id) + ' ' + 'order'
+        return str(self.id) 
 
 
 
-from django.core.mail import send_mail
-from django.db.models.signals import post_save, pre_save
-from django.dispatch import receiver
 
 
 @receiver(post_save, sender=SubscribeEmail)
@@ -70,7 +75,7 @@ def sending_email_order(sender, instance, **kwargs):
     if len(instance.events.all()) > 0:
         send_mail(
             'Tickets UA',
-            'Hello, {}. Here is your order confirmation. You ordered {} tickets: {}'.format(instance.name, len(instance.events.all()), events),
+            'Hello, {}. Here is your order confirmation. You ordered {} tickets: {} \nTotal: ${}'.format(instance.name, len(instance.events.all()), events, instance.total),
             'TICKETS UA',
             [str(instance.email)],
             fail_silently=False
